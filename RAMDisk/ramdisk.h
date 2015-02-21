@@ -62,7 +62,7 @@ static void ramdisk_request(struct request_queue *q) {
     sector_t mpage;
     
     req = blk_fetch_request(q);
-    while (req != NULL) {
+    while (req) {
         if (req->cmd_type != REQ_TYPE_FS) {
             if (!__blk_end_request_cur(req, 0)) {
                 DEBUG_MSG(KERN_NOTICE "<%s, %d> | continue req\n", __FUNCTION__, __LINE__);
@@ -79,8 +79,8 @@ static void ramdisk_request(struct request_queue *q) {
 #else
             iow(DEV_DDRC_SEGMENT, (mpage >> 19) & 0xFF);
             maddr = Device.data + (mpage & 0x7FFFF);
+            //DEBUG_MSG(KERN_DEBUG "<%s, %d> | maddr-v_addr: %p || mpage: %lX || sec: %lu || len: %d \n", __FUNCTION__, __LINE__, (void *)(maddr - v_addr_bar), mpage, iter.bio->bi_sector, bvec->bv_len); 
 #endif
-            //DEBUG_MSG(KERN_DEBUG "<%s, %d> | maddr-v_addr: %p || mpage: %lX || sec: %lu || len: %d \n", __FUNCTION__, __LINE__, (void *)(maddr - v_addr_bar), mpage, iter.bio->bi_sector, bvec->bv_len );
             if (bio_data_dir(iter.bio) == READ) {
                 memcpy(kaddr, maddr, bvec->bv_len);
             }
