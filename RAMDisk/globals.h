@@ -10,35 +10,30 @@
 #define	GLOBALS_H
 #include "ioctl_cmds.h"
 
-// Important
-#define DRIVER_NAME         "CFPGA"
-#define VENDOR_ID           0x10EE
-#define DEVICE_ID           0x0007
-#define MINOR_FIRST         0U
-#define MINOR_CNT           1U
+#define DRIVER_NAME             "CFPGA" // Geraetename
+#define VENDOR_ID               0x10EE  // Register der Hersteller ID
+#define DEVICE_ID               0x0007  // Register der Geraete ID
+#define MINOR_FIRST             0U      // Erste Minor-Nr.
+#define MINOR_CNT               1U      // Anzahl der Minors
 
-// Options
-#define USE_VMALLOC         1
-#define USE_QUEUE           0
-#define DEBUG               1
+#define USE_VMALLOC             1       // 1: Betriebssystem-RAMs verwenden
+#define USE_QUEUE               0       // 1: Treiberoptimierte Variante
+#define DEBUG                   1       // 1: Debugging einschalten
 #ifdef DEBUG
 #define DEBUG_MSG(format, msg...) printk(format, ## msg)
 #else
 #define DEBUG_MSG(format, msg...)
 #endif
 
-// Registers
-#define DEV_DDR_DATA        0x80000 // 1 Segment (512 KiB) des dyn. Speichers
-#define DEV_DDRC_SEGMENT    0x02700 // Segmentauswahl für dyn. Speicher
-#define DEV_VER_DATA        0x02500 // Versionsinfos des FPGAs
+#define DEV_DDR_DATA            0x80000 // 1 Segment (512 KiB) des dyn. Speichers
+#define DEV_DDRC_SEGMENT        0x02700 // Segmentauswahl fuer dyn. Speicher
+#define DEV_VER_DATA            0x02500 // Versionsinfos des FPGAs
 
-// PCI-Dev Globals
-static int major                    = 0U;
-static unsigned long v_addr_bar     = 0UL; 
-static unsigned long mem_start      = 0UL;
-static unsigned long mem_end        = 0UL;
-        
-// Helper-Functions
+static int major                = 0U;   // Major-Nr.
+static unsigned long v_addr_bar = 0UL;  // Ph. gemappter PCI-Adressanfang 
+static unsigned long mem_start  = 0UL;  // Anfang des PCI-Speichers
+static unsigned long mem_end    = 0UL;  // Groesse des PCI-Speichers
+
 /**
  * Schreibt einen Wert in die mit übergebene Adresse.
  * @param address  Adresse in die der Wert geschrieben werden soll
@@ -46,7 +41,7 @@ static unsigned long mem_end        = 0UL;
  */
 static void iow(unsigned long address, unsigned int value) {
     //wmb(); 
-    writel(value, (void *)v_addr_bar + address);
+    iowrite32(value, (void *)v_addr_bar + address);
 }
 
 /**
@@ -54,9 +49,9 @@ static void iow(unsigned long address, unsigned int value) {
  * @param address  Adresse aus der der Wert ausgelesen werden soll
  * @return         Wert der Adresse
  */
-static unsigned long ior(unsigned long address) {
+static unsigned int ior(unsigned long address) {
     //rmb(); 
-    return readl((void *)v_addr_bar + address);
+    return ioread32((void *)v_addr_bar + address);
 }
 
 #endif
