@@ -10,17 +10,16 @@
 #define	RAMDISK_DEVICE_H
 
 // RAM-Settings
-#define KERNEL_SECTOR_SIZE  512UL
-#define LOGICAL_BLOCK_SIZE  524288UL    // 1024 X 512 KiB = 524288 Bits
-#define NO_SECTORS          256UL       // (256 X 524288) / 1024 = 128 MB
-// TOTAL SIZE = LOGICAL_BLOCK_SIZE * NO_SECTORS = 524288 * 256 = 134217728 Byte
+#define KERNEL_SECTOR_SIZE  512UL       // Im Kernel definierte Blockgroesse
+#define LOGICAL_BLOCK_SIZE  524288UL    // 1024 X 512 KiB = 524288 Bytes
+#define NO_SECTORS          256UL       // (256 X 524288) / 1024 = 128 MiB
 
 static struct bd_device {
-    unsigned long long size;
-    spinlock_t lock;
-    char *data;
-    struct request_queue *queue;
-    struct gendisk *disk;
+    unsigned long long size;            // RAMDisk-Groesse
+    spinlock_t lock;                    // Zur Abarbeitung der Requests
+    char *data;                         // Zeiger auf den Speicherbereich
+    struct request_queue *queue;        // Warteschlange
+    struct gendisk *disk;               // Gendisk-Struktur
 } Device;
 
 #endif
