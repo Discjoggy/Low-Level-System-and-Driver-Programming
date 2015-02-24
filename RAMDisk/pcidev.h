@@ -16,13 +16,13 @@ static struct class *pci_cls;
 
 static struct pci_device_id pci_drv_tbl[] __initdata_or_module = {
     {       
-        .vendor         = VENDOR_ID,    // manufacturer identifier
-        .device         = DEVICE_ID,    // device identifier
-        .subvendor      = PCI_ANY_ID,   // subsystem manufacturer identifier
-        .subdevice      = PCI_ANY_ID,   // subsystem device identifier
-        .class          = 0,            // device class
-        .class_mask     = 0,            // mask for device class
-        .driver_data    = 0,            // driver specific data
+        .vendor         = VENDOR_ID,    // Hersteller ID
+        .device         = DEVICE_ID,    // Geraete ID
+        .subvendor      = PCI_ANY_ID,   // Hersteller-Subsystem ID
+        .subdevice      = PCI_ANY_ID,   // Geraete-Subsystem ID
+        .class          = 0,            // Geraeteklasse
+        .class_mask     = 0,            // Maske fuer die Geraeteklasse
+        .driver_data    = 0,            // Treiberspezifische Daten
     },                  
     {
         0, 
@@ -74,7 +74,7 @@ static int pci_probe(struct pci_dev *pdev, const struct pci_device_id *id) {
         }
     }
 
-    DEBUG_MSG(KERN_DEBUG "<%s, %d> | Done [Test I/O (Vers.): %lX]\n", __FUNCTION__, __LINE__, ior(DEV_VER_DATA));
+    DEBUG_MSG(KERN_DEBUG "<%s, %d> | Done [Test I/O (Vers.): %X]\n", __FUNCTION__, __LINE__, ior(DEV_VER_DATA));
     return 0;
     
     f_device_create:
@@ -115,10 +115,10 @@ static void pci_remove(struct pci_dev *pdev) {
 }
 
 static struct pci_driver pci_drv = {
-    .name       = DRIVER_NAME,
-    .probe      = pci_probe,
-    .remove     = pci_remove,
-    .id_table   = pci_drv_tbl,
+    .name       = DRIVER_NAME,      // Name des Geraetes
+    .probe      = pci_probe,        // Registrierungs-Funktion
+    .remove     = pci_remove,       // Remove-Funktion
+    .id_table   = pci_drv_tbl,      // Geraetetreibertabelle
 };
 
 #endif
