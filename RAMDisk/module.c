@@ -25,7 +25,7 @@ static int inv_module_init(void) {
 }
 
 /**
- * Derigistriert den Treiber aus dem Kernel.
+ * Deregistriert den Treiber aus dem Kernel.
  */
 static void inv_module_exit(void) {
     DEBUG_MSG(KERN_DEBUG "<%s, %d> | Start\n", __FUNCTION__, __LINE__);
@@ -38,5 +38,5 @@ module_exit(inv_module_exit);
 
 MODULE_AUTHOR("Tobias Sibera, Jens Overmoeller");
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("RAMDisc-Driver-Example");
+MODULE_DESCRIPTION("RAMDisk-Driver-Example");
 MODULE_SUPPORTED_DEVICE(DRIVER_NAME);
