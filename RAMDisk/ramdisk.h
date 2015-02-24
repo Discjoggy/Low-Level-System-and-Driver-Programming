@@ -27,7 +27,7 @@ static void ramdisk_request(struct request_queue *q, struct bio *bio) {
     int segnr;
     sector_t mpage;
 
-    blk_queue_bounce(q, &bio); // Hig-Memory-Support
+    blk_queue_bounce(q, &bio); // High-Memory-Support
     mpage = KERNEL_SECTOR_SIZE * bio->bi_sector;
     bio_for_each_segment(bvec, bio, segnr) {
         kaddr = bio_data(bio);
@@ -62,7 +62,7 @@ static void ramdisk_request(struct request_queue *q) {
     sector_t mpage;
     
     req = blk_fetch_request(q);
-    while (req) {
+    while (req != NULL) {
         if (req->cmd_type != REQ_TYPE_FS) {
             if (!__blk_end_request_cur(req, 0)) {
                 DEBUG_MSG(KERN_NOTICE "<%s, %d> | continue req\n", __FUNCTION__, __LINE__);
@@ -99,7 +99,7 @@ static void ramdisk_request(struct request_queue *q) {
 /**
  * Fängt IOCTLs ab und reagiert auf entsprechende CMDs.
  * @param block_device  PCI-Device
- * @param mode          ??
+ * @param mode          Modus
  * @param cmd           Kommando
  * @param arg           Argument
  * @return              0 falls keine Fehler aufgetreten sind, andernfalls != 0.
@@ -112,10 +112,10 @@ static int ramdisk_ioctl(struct block_device *block_device, fmode_t mode, unsign
     DEBUG_MSG(KERN_DEBUG "<%s, %d> | Start, cmd: %u\n", __FUNCTION__, __LINE__, cmd);
     switch (cmd) {
         //case 21297: // What's it good for?
-        case HDIO_GETGEO: {
+        /*case HDIO_GETGEO: {
             struct hd_geometry geo;
             DEBUG_MSG(KERN_INFO "<%s, %d> | GEO-IOCTL\n", __FUNCTION__, __LINE__);
-            geo.cylinders   = (Device.size & ~0x3F) >> 6;
+            geo.cylinders   = (Device.size / KERNEL_SECTOR_SIZE & ~0x3F) >> 6;  // 4096
             geo.heads       = 4;
             geo.sectors     = 16;
             geo.start       = 0;
@@ -123,7 +123,7 @@ static int ramdisk_ioctl(struct block_device *block_device, fmode_t mode, unsign
     	           DEBUG_MSG(KERN_WARNING "<%s, %d> | copy_to_user won't work\n", __FUNCTION__, __LINE__);
                 return -EFAULT;
             }
-            return 0; }
+            return 0; }*/
         case IOCTLCMD_RAM_PCI_VER: {
             int retval = ior(DEV_VER_DATA);
             DEBUG_MSG(KERN_INFO "<%s, %d> | DEV_VER_DATA: %u\n", __FUNCTION__, __LINE__, DEV_VER_DATA);
@@ -153,7 +153,7 @@ static int ramdisk_ioctl(struct block_device *block_device, fmode_t mode, unsign
  */
 static int ramdisk_getgeo(struct block_device *block_device, struct hd_geometry *geo) {
     DEBUG_MSG(KERN_INFO "<%s, %d> | Start\n", __FUNCTION__, __LINE__);
-    geo->cylinders   = (Device.size & ~0x3F) >> 6;
+    geo->cylinders   = (Device.size / KERNEL_SECTOR_SIZE & ~0x3F) >> 6; // 4096
     geo->heads       = 4;
     geo->sectors     = 16;
     geo->start       = 0;
@@ -162,9 +162,9 @@ static int ramdisk_getgeo(struct block_device *block_device, struct hd_geometry 
 }
 
 static struct block_device_operations bops = {
-    .owner              = THIS_MODULE,
-    .ioctl              = ramdisk_ioctl,
-    .getgeo             = ramdisk_getgeo,
+    .owner              = THIS_MODULE,          // Besitzer (Pflichtangabe) 
+    .ioctl              = ramdisk_ioctl,        // Zur Bearbeitung der IOCTL-Kommandos
+    .getgeo             = ramdisk_getgeo,       // Zum Bearbeiten von Geometrieanfragen
     /*.open             = ramdisk_open,
     .release            = ramdisk_release,
     .locked_ioctl       = ramdisk_locked_ioctl,
