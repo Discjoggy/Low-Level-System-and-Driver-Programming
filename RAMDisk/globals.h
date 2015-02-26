@@ -17,20 +17,22 @@
 #define MINOR_CNT               1U      // Anzahl der Minors
 
 #define USE_VMALLOC             1       // 1: Betriebssystem-RAMs verwenden
-#define USE_QUEUE               0       // 1: Treiberoptimierte Variante
+#define USE_QUEUE               1       // 1: Treiberoptimierte Variante
 #define DEBUG                   1       // 1: Debugging einschalten
-#ifdef DEBUG
+#if DEBUG
 #define DEBUG_MSG(format, msg...) printk(format, ## msg)
 #else
 #define DEBUG_MSG(format, msg...)
 #endif
 
-#define DEV_DDR_DATA            0x80000 // 1 Segment (512 KiB) des dyn. Speichers
-#define DEV_DDRC_SEGMENT        0x02700 // Segmentauswahl fuer dyn. Speicher
-#define DEV_VER_DATA            0x02500 // Versionsinfos des FPGAs
+#define DEV_DDR_DATA            0x80000UL // 1 Segment (512 KiB) des dyn. Speichers
+#define DEV_DDRC_SEGMENT        0x02700UL // Segmentauswahl fuer dyn. Speicher
+#define DEV_VER_DATA            0x02500UL // Versionsinfos des FPGAs
 
 static int major                = 0U;   // Major-Nr.
 static unsigned long v_addr_bar = 0UL;  // Ph. gemappter PCI-Adressanfang 
+
+#if !USE_VMALLOC
 static unsigned long mem_start  = 0UL;  // Anfang des PCI-Speichers
 static unsigned long mem_end    = 0UL;  // Groesse des PCI-Speichers
 
@@ -43,6 +45,7 @@ static void iow(unsigned long address, unsigned int value) {
     //wmb(); 
     iowrite32(value, (void *)v_addr_bar + address);
 }
+#endif
 
 /**
  * Gibt den Wert der übergebenen Adresse zurück.
