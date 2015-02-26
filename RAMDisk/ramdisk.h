@@ -13,7 +13,9 @@
 #include <linux/hdreg.h>
 #include "globals.h"
 #include "ramdisk_device.h"
+#if !USE_VMALLOC
 #include "pcidev.h"
+#endif
 
 #if USE_QUEUE
 /**
@@ -35,11 +37,11 @@ static void ramdisk_request(struct request_queue *q, struct bio *bio) {
         maddr = Device.data + mpage;
 #else
         //DEBUG_MSG(KERN_DEBUG "<%s, %d> | %lX||%lX||%lX||%lX||%lX %p\n", __FUNCTION__, __LINE__, (mpage >> 19), (mpage >> 18) & 0xFF, (mpage >> 17) & 0xFF, (mpage >> 16) & 0xFF, (mpage >> 15) & 0xFF, Device.data + mpage);
-        iow(DEV_DDRC_SEGMENT, (mpage >> 19) & 0xFF);
+        iow(DEV_DDRC_SEGMENT, mpage);
         maddr = Device.data + (mpage & 0x7FFFF);
 #endif
-        DEBUG_MSG(KERN_DEBUG "<%s, %d> | \n%p\n%p\n", __FUNCTION__, __LINE__, Device.data + (mpage & 0x7FFFF), Device.data + ior(DEV_DDRC_SEGMENT) * bio->bi_sector);
-        DEBUG_MSG(KERN_DEBUG "<%s, %d> | maddr-v_addr: %p || mpage: %lX || sec: %lu || len: %d \n", __FUNCTION__, __LINE__, (void *)(maddr - v_addr_bar), mpage, bio->bi_sector, bio->bi_size);
+        //DEBUG_MSG(KERN_DEBUG "<%s, %d> | \n%p\n%p\n", __FUNCTION__, __LINE__, Device.data + (mpage & 0x7FFFF), Device.data + ior(DEV_DDRC_SEGMENT) * bio->bi_sector);
+        //DEBUG_MSG(KERN_DEBUG "<%s, %d> | maddr-v_addr: %p || mpage: %lX || sec: %lu || len: %d \n", __FUNCTION__, __LINE__, (void *)(maddr - v_addr_bar), mpage, bio->bi_sector, bio->bi_size);
         if (bio_data_dir(bio) == READ || bio_data_dir(bio) == READA) {
             memcpy(kaddr, maddr, bio->bi_size);
         } 
@@ -77,8 +79,10 @@ static void ramdisk_request(struct request_queue *q) {
 #if USE_VMALLOC
             maddr = Device.data + mpage;
 #else
-            iow(DEV_DDRC_SEGMENT, (mpage >> 19) & 0xFF);
+            //iow(DEV_DDRC_SEGMENT, (mpage / LOGICAL_BLOCK_SIZE) << 19);
+            iow(DEV_DDRC_SEGMENT, mpage);
             maddr = Device.data + (mpage & 0x7FFFF);
+            //DEBUG_MSG(KERN_DEBUG "#1: %lu #2: %lu\n", mpage, ior(DEV_DDRC_SEGMENT));
             //DEBUG_MSG(KERN_DEBUG "<%s, %d> | maddr-v_addr: %p || mpage: %lX || sec: %lu || len: %d \n", __FUNCTION__, __LINE__, (void *)(maddr - v_addr_bar), mpage, iter.bio->bi_sector, bvec->bv_len); 
 #endif
             if (bio_data_dir(iter.bio) == READ) {
@@ -126,7 +130,7 @@ static int ramdisk_ioctl(struct block_device *block_device, fmode_t mode, unsign
             return 0; }*/
         case IOCTLCMD_RAM_PCI_VER: {
             int retval = ior(DEV_VER_DATA);
-            DEBUG_MSG(KERN_INFO "<%s, %d> | DEV_VER_DATA: %u\n", __FUNCTION__, __LINE__, DEV_VER_DATA);
+            DEBUG_MSG(KERN_INFO "<%s, %d> | DEV_VER_DATA: %lu\n", __FUNCTION__, __LINE__, DEV_VER_DATA);
             if (0 != copy_to_user((void __user *)arg, &retval, sizeof(int))) {
     	           DEBUG_MSG(KERN_WARNING "<%s, %d> | copy_to_user won't work\n", __FUNCTION__, __LINE__);
                 return -ENOTTY;
@@ -204,9 +208,10 @@ static int ramdisk_init(void) {
         DEBUG_MSG(KERN_ERR "<%s, %d> | blk_init_queue failed\n", __FUNCTION__, __LINE__);
         goto fail_init_queue;
     }
+#endif
+    blk_queue_segment_boundary(Device.queue, 0x80000);
     blk_queue_logical_block_size(Device.queue, KERNEL_SECTOR_SIZE);
     //blk_queue_max_segment_size(Device.queue, KERNEL_SECTOR_SIZE);
-#endif
     
     if (!(Device.disk = alloc_disk(MINOR_CNT))) {
         DEBUG_MSG(KERN_ERR "<%s, %d> | alloc_disk failed\n", __FUNCTION__, __LINE__);
