@@ -18,10 +18,10 @@
 #include <sstream>
 #include "ioctl_cmds.h"
 
-#define USERNAME "tosibera"             // Check if valid!
+#define USERNAME "student"              // Check if valid!
 
 #define FILE_NAME "FakeFile"            // Testfile
-#define MOUNT_NAME "RAMDISK1"           // Name of mounted device
+#define MOUNT_NAME "RAMDISK1"            // Name of mounted device
 #define DEVICE "/dev/CFPGA251"          // block device
 
 #define MEGABYTE 1048576                // (1024 * 1024)
@@ -29,7 +29,7 @@
 #define BYTE_TO_MB(value) (value >> 20)
 
 static unsigned long long max_size      = MB_TO_BYTE(128);
-static unsigned long long file_size     = MB_TO_BYTE(32);
+static unsigned long long file_size     = MB_TO_BYTE(96);
 static unsigned int file_count          = 1;
 
 /**
