@@ -13,6 +13,7 @@ fi
 
 if [ $2 = "format" ] ; then
 	mkfs.vfat -F 32 /dev/CFPGA251 -n RAMDISK
-	#mount /dev/CFPGA251 /media/$HOME
+     	#mkdir /media/student/RAMDISK1
+	#mount /dev/CFPGA251 /media/student/RAMDISK1
 	echo "disk successfully formatted as FAT" >&2
 fi
